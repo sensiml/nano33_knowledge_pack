@@ -9,9 +9,7 @@
 extern "C" {
 #endif
 
-#define SML_KP_DEBUG 1
-#define KB_LOG_LEVEL 1
-#define SML_PROFILER 0
+
 #ifndef SML_KP_DEBUG
 #define SML_KP_DEBUG 0
 #endif
@@ -45,14 +43,22 @@ extern "C" {
 		#define dbgprintlev(level, ...) if(level <= KB_LOG_LEVEL) {NRF_LOG_INFO(__VA_ARGS__);}
 		#define dbgprintlev_no_nl(level, ...) dbgprintlev(level, __VA_ARGS__);
 	#else
-    	#define dbgprintlev(level,...)
-		#define dbgprintlev_no_nl(level, ...)
+    	#ifndef dbgprintlev
+    		#define dbgprintlev(level,...)
+		#endif //dbgprintlev
+		#ifndef dbgprintlev_no_nl
+			#define dbgprintlev_no_nl(level, ...)
+		#endif //dbgprintlev_no_nl
 	#endif
 
 #else
+#ifndef dbgprintlev
     #define dbgprintlev(level,...)
+#endif //dbgprintlev
+#ifndef dbgprintlev_no_nl
 	#define dbgprintlev_no_nl(level, ...)
-#endif //DEBUG
+#endif //dbgprintlev_no_nl
+#endif //SML_KP_DEBUG
 
 #ifdef __cplusplus
 }
