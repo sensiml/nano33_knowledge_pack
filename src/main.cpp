@@ -1,17 +1,25 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <Arduino_LSM9DS1.h> //Include the library for 9-axis IMU
+
+#define dbgprintlev(level, ...) if(level <= KB_LOG_LEVEL) {Serial.println(__VA_ARGS__);}
+
 #include <kb.h>
-#include <sml_recognition_run.h>
 #include <recognition_config.h>
 
 
 static unsigned long currentMs, previousMs;
-static long interval = 0;
+static unsigned long interval = 0;
+int num_sensors = ((ENABLE_ACCEL * 3) + (ENABLE_GYRO * 3) + (ENABLE_MAG * 3));
+int ret = 0;
 
-static int16_t sensorRawData[(ENABLE_ACCEL * 3) + (ENABLE_GYRO * 3) + (ENABLE_MAG * 3)];
+static int16_t sensorRawData[((ENABLE_ACCEL * 3) + (ENABLE_GYRO * 3) + (ENABLE_MAG * 3))];
+static SENSOR_DATA_T* data = (SENSOR_DATA_T*)&sensorRawData[0];
 static int sensorRawIndex = 0;
-static SensiML sml;
+
+static uint8_t features[MAX_VECTOR_SIZE];
+static uint8_t fv_length;
+
 DynamicJsonDocument classification_result(1024);
 
 static int get_acc_gyro_odr()
@@ -68,82 +76,93 @@ static void setup_imu()
 
 static void update_imu()
 {
+    int16_t x,y,z;
     //Accelerometer values IMU.accelerationAvailable() &&
     if (ENABLE_ACCEL) {
-        IMU.readRawAccelInt16(sensorRawData[sensorRawIndex++], sensorRawData[sensorRawIndex++], sensorRawData[sensorRawIndex++]);
+        IMU.readRawAccelInt16(x,y,z);
+        sensorRawData[sensorRawIndex++] = x;
+        sensorRawData[sensorRawIndex++] = y;
+        sensorRawData[sensorRawIndex++] = z;
     }
 
     //Gyroscope values IMU.gyroscopeAvailable() &&
     if (ENABLE_GYRO) {
-        IMU.readRawGyroInt16(sensorRawData[sensorRawIndex++], sensorRawData[sensorRawIndex++], sensorRawData[sensorRawIndex++]);
+        IMU.readRawGyroInt16(x,y,z);
+        sensorRawData[sensorRawIndex++] = x;
+        sensorRawData[sensorRawIndex++] = y;
+        sensorRawData[sensorRawIndex++] = z;
     }
 
     //Magnetometer values IMU.magneticFieldAvailable() &&
     if (ENABLE_MAG) {
-        IMU.readRawMagnetInt16(sensorRawData[sensorRawIndex++], sensorRawData[sensorRawIndex++], sensorRawData[sensorRawIndex++]);
+        IMU.readRawMagnetInt16(x,y,z);
+        sensorRawData[sensorRawIndex++] = x;
+        sensorRawData[sensorRawIndex++] = y;
+        sensorRawData[sensorRawIndex++] = z;
     }
 }
 
-static void sendKnowledgePackOutput(int classification, int model)
+static void sml_output_results(uint16_t model, uint16_t classification)
 {
 
-uint8_t features[MAX_VECTOR_SIZE];
 
-uint8_t fv_length;
-classification_result["ModelNumber"] = model;
-classification_result["Classification"] = classification;
-//kb_get_feature_vector(model,  features, &fv_length);
-sml.GetFeatures(model, &fv_length, (uint8_t*)features);
-int charIndex = 0;
-classification_result["FeatureLength"] = fv_length;
-// featureString[charIndex++] = '[';
+    classification_result["ModelNumber"] = model;
+    classification_result["Classification"] = classification;
 
-JsonArray fv = classification_result.createNestedArray("FeatureVector");
-for(int i=0; i < fv_length; i++)
-{
-    fv.add(String(features[i]));
-}
+    kb_get_feature_vector(model,  features, &fv_length);
+    classification_result["FeatureLength"] = fv_length;
 
-serializeJson(classification_result, Serial);
-Serial.println("");
-Serial.flush();
-classification_result.clear();
+    JsonArray fv = classification_result.createNestedArray("FeatureVector");
+    for(int i=0; i < fv_length; i++)
+    {
+        fv.add(String(features[i]));
+    }
+
+    serializeJson(classification_result, Serial);
+    Serial.println("");
+    Serial.flush();
+    classification_result.clear();
+
 }
 
 void setup()
 {
 
     Serial.begin(SERIAL_BAUD_RATE);
+    delay(1000);
     Serial.println("Setting up...");
     // put your setup code here, to run once:
 
     setup_imu();
     delay(1000);
-    //kb_model_init();
-    sml = SensiML();
+    kb_model_init();
+    delay(1000);
     interval = (1000 / (long)get_acc_gyro_odr());
     delay(1000);
+    memset(sensorRawData, 0, num_sensors * sizeof(int16_t));
 }
+
 
 void loop()
 {
+
     //We start with the initial model we want to run.
     //If there is a heirarchy of models, the final model number will be placed here.
     sensorRawIndex = 0;
-    int final_model_number = KB_MODEL_jp1_rank_0_INDEX;
-    int classification = -1;
     currentMs = millis();
     // put your main code here, to run repeatedly:
     if (currentMs - previousMs >= interval)
     {
-        update_imu();
-        classification = sml.RunModel(sensorRawData, &final_model_number);
-        if(classification >= 0)
-        {
-            sendKnowledgePackOutput(classification, final_model_number);
 
-            sml.ResetModel(KB_MODEL_jp1_rank_0_INDEX);
-        }
+        update_imu();
+        data = sensorRawData;
+    	ret = kb_run_model((SENSOR_DATA_T *)data, num_sensors, KB_MODEL_jp1_rank_0_INDEX);
+		if (ret >= 0){
+			sml_output_results(KB_MODEL_jp1_rank_0_INDEX, ret);
+			kb_reset_model(0);
+            memset(sensorRawData, 0, num_sensors * sizeof(int16_t));
+		};
+
         previousMs = currentMs;
     }
 }
