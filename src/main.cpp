@@ -152,9 +152,9 @@ void loop()
     {
         update_imu();
         data = sensorRawData;
-        ret = kb_run_model((SENSOR_DATA_T*)data, num_sensors, KB_MODEL_jp1_rank_2_INDEX);
+        ret = kb_run_model((SENSOR_DATA_T*)data, num_sensors, KB_MODEL_jp1_rank_0_INDEX);
         if (ret >= 0) {
-            sml_output_results(KB_MODEL_jp1_rank_2_INDEX, ret);
+            sml_output_results(KB_MODEL_jp1_rank_0_INDEX, ret);
             kb_reset_model(0);
         };
 

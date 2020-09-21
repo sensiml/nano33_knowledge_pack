@@ -1,9 +1,9 @@
 # Arduino Knowledge Pack Example for Nano33 BLE Sense
-Example application code for running a SensiML Knowledge Pack on Arduino boards, for the Nano33 BLE Sense
+Example application code for running a [SensiML Knowledge Pack](https://sensiml.com/products/knowledge-pack/) on Arduino boards, for the Nano33 BLE Sense
 
 ## Choosing the correct SensiML hardware platform
 
-In order to run a Knowledge Pack, you must first have a model generated via SensiML Analytics Studio.
+In order to run a Knowledge Pack, you must first have a model generated via [SensiML Analytics Studio](https://sensiml.com/products/analytics-studio/).
 
 When downloading a model, you will need to select `Arduino Cortex M4 ARM GCC 8.2.1` from the target device.
 
@@ -20,14 +20,14 @@ Unzip the download to a location of your choosing. In the folder, you will find 
 Copy the files from `libsensiml` to lib/sensiml. It is **ok to overwrite these, but do not commit them in a pull request**. The files provided in this repository are for examples only.
 
 Copy the files from `knowledgepack_project` to src/
-Updates to the setup and non-generated code in `main.cpp` will be pulled into SensiML's services for building libraries.
+Updates to the setup and non-generated code in `main.cpp` will be pulled into SensiML services for building libraries.
 
 Build/upload the firmware.
 
 ### Adjusting IMU Frequency
 
 If you wish to run the IMU at a different frequency (default for data capture and this example is 119 Hz), modify the `ACCEL_GYRO_DEFAULT_ODR` in `include/recognition_config.h`
-As the Data Capture Lab of the [SensiML Toolkit](https://sensiml.com/products/) does not actively configure the device, a capture configuration isn't generated when utilizing the model code.
+As the [Data Capture Lab](https://sensiml.com/products/data-capture-lab/) of the SensiML Toolkit does not actively configure the device, a capture configuration isn't generated when creating the model code.
 
 ## Viewing Model Output
 
