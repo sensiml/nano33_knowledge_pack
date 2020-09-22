@@ -36,3 +36,7 @@ For Serial output, simply connect to your Nano33 via any serial monitoring appli
 ``` json
 {"ModelNumber":0,"Classification":2,"FeatureLength":33,"FeatureVector":["2","0","253","252","93","217","0","0","0","0","0","0","205","221","255","183","0","0","0","1","1","0","0","1","0","1","0","0","2","0","4","145","19"]}
 ```
+
+## Using TensorFlow Lite for Microcontrollers in a Knowledge Pack
+When running a model built using [TensorFlow Lite](https://www.tensorflow.org/lite) in a [SensiML Knowledge Pack](https://sensiml.com/tensorflow-lite/), another environment is provided in the code base.
+The environment `env:nano33ble_with_tensorflow` will automatically link TensorFlow from a model download into the application
