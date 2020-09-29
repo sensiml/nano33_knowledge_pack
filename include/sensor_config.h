@@ -1,5 +1,5 @@
-#ifndef __RECOGNITION_CONFIG_H__
-#define __RECOGNITION_CONFIG_H__
+#ifndef __SENSOR_CONFIG_H__
+#define __SENSOR_CONFIG_H__
 
 /**
  *
@@ -62,6 +62,22 @@ enum {
 #define ACCEL_GYRO_DEFAULT_ODR ACCEL_GYRO_ODR_119HZ
 #define MAG_DEFAULT_ODR MAG_ODR_20HZ
 
+#define ENABLE_AUDIO 1
+#if ENABLE_AUDIO
+#define AUDIO_SAMPLE_RATE 16000
+int setup_audio(JsonDocument& config_message, int column_start);
+uint8_t* getSampleBuffer();
+#if ENABLE_ACCEL || ENABLE_GYRO || ENABLE_MAG
+#warning "Audio and IMU are enabled. only audio will be used"
+#undef ENABLE_ACCEL
+#undef ENABLE_GYRO
+#undef ENABLE_MAG
+#define ENABLE_ACCEL 0
+#define ENABLE_GYRO  0
+#define ENABLE_MAG   0
+#endif //#if ENABLE_ACCEL || ENABLE_GYRO || ENABLE_MAG
+
+#endif //ENABLE_AUDIO
 
 
-#endif //__RECOGNITION_CONFIG_H__
+#endif //__SENSOR_CONFIG_H__
