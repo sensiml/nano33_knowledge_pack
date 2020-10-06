@@ -1,23 +1,18 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <Arduino_LSM9DS1.h> //Include the library for 9-axis IMU
-
-#define dbgprintlev(level, ...)      \
-    if (level <= KB_LOG_LEVEL) {     \
-        Serial.println(__VA_ARGS__); \
-    }
+#include <Arduino_LSM9DS1.h>  //Include the library for 9-axis IMU
 
 #include <kb.h>
-#include <recognition_config.h>
+#include <sensor_config.h>
 
 static unsigned long currentMs, previousMs;
-static unsigned long interval = 0;
-int num_sensors = ((ENABLE_ACCEL * 3) + (ENABLE_GYRO * 3) + (ENABLE_MAG * 3));
-int ret = 0;
+static unsigned long interval    = 0;
+int                  num_sensors = ((ENABLE_ACCEL * 3) + (ENABLE_GYRO * 3) + (ENABLE_MAG * 3));
+int                  ret         = 0;
 
-static int16_t sensorRawData[((ENABLE_ACCEL * 3) + (ENABLE_GYRO * 3) + (ENABLE_MAG * 3))];
-static SENSOR_DATA_T* data = (SENSOR_DATA_T*)&sensorRawData[0];
-static int sensorRawIndex = 0;
+static int16_t        sensorRawData[((ENABLE_ACCEL * 3) + (ENABLE_GYRO * 3) + (ENABLE_MAG * 3))];
+static SENSOR_DATA_T* data           = (SENSOR_DATA_T*) &sensorRawData[0];
+static int            sensorRawIndex = 0;
 
 static uint8_t features[MAX_VECTOR_SIZE];
 static uint8_t fv_length;
@@ -45,16 +40,16 @@ static int get_acc_gyro_odr()
 
 static void setup_imu()
 {
-    if (!IMU.begin()) //Initialize IMU sensor
+    if (!IMU.begin())  // Initialize IMU sensor
     {
         Serial.println("Failed to initialize IMU!");
         while (1)
             ;
     }
 
-    //Set units.
-    IMU.accelUnit = METERPERSECOND2;
-    IMU.gyroUnit = DEGREEPERSECOND;
+    // Set units.
+    IMU.accelUnit  = METERPERSECOND2;
+    IMU.gyroUnit   = DEGREEPERSECOND;
     IMU.magnetUnit = MICROTESLA;
 
 #if ENABLE_ACCEL && (ENABLE_GYRO == 0)
@@ -65,7 +60,7 @@ static void setup_imu()
     IMU.setAccelODR(ACCEL_GYRO_DEFAULT_ODR);
     IMU.setGyroODR(ACCEL_GYRO_DEFAULT_ODR);
 
-#else //gyro only
+#else  // gyro only
     IMU.setAccelODR(ACCEL_GYRO_ODR_OFF);
     IMU.setGyroODR(ACCEL_GYRO_DEFAULT_ODR);
 
@@ -80,7 +75,7 @@ static void setup_imu()
 static void update_imu()
 {
     int16_t x, y, z;
-    //Accelerometer values IMU.accelerationAvailable() &&
+    // Accelerometer values IMU.accelerationAvailable() &&
     if (ENABLE_ACCEL)
     {
         IMU.readRawAccelInt16(x, y, z);
@@ -89,7 +84,7 @@ static void update_imu()
         sensorRawData[sensorRawIndex++] = z;
     }
 
-    //Gyroscope values IMU.gyroscopeAvailable() &&
+    // Gyroscope values IMU.gyroscopeAvailable() &&
     if (ENABLE_GYRO)
     {
         IMU.readRawGyroInt16(x, y, z);
@@ -98,7 +93,7 @@ static void update_imu()
         sensorRawData[sensorRawIndex++] = z;
     }
 
-    //Magnetometer values IMU.magneticFieldAvailable() &&
+    // Magnetometer values IMU.magneticFieldAvailable() &&
     if (ENABLE_MAG)
     {
         IMU.readRawMagnetInt16(x, y, z);
@@ -110,7 +105,7 @@ static void update_imu()
 
 static void sml_output_results(uint16_t model, uint16_t classification)
 {
-    classification_result["ModelNumber"] = model;
+    classification_result["ModelNumber"]    = model;
     classification_result["Classification"] = classification;
 
     kb_get_feature_vector(model, features, &fv_length);
@@ -128,36 +123,98 @@ static void sml_output_results(uint16_t model, uint16_t classification)
     classification_result.clear();
 }
 
+#if ENABLE_AUDIO
+#include <PDM.h>
+static void  onPDMdata();
+volatile int samplesRead;
+short        sampleBuffer[1024];
+
+int setup_audio()
+{
+    PDM.onReceive(onPDMdata);
+    if (!PDM.begin(1, 16000))
+    {
+        Serial.println("Failed to start PDM!");
+        while (1)
+            ;
+    }
+
+    return 0;
+}
+
+uint8_t* getSampleBuffer() { return (uint8_t*) sampleBuffer; }
+
+static void onPDMdata()
+{
+    // query the number of bytes available
+    int bytesAvailable = PDM.available();
+
+    // read into the sample buffer
+    PDM.read(sampleBuffer, bytesAvailable);
+
+    // 16-bit, 2 bytes per sample
+    samplesRead = bytesAvailable / 2;
+}
+
+#endif
+
 void setup()
 {
     Serial.begin(SERIAL_BAUD_RATE);
     delay(1000);
     Serial.println("Setting up...");
 
+#if ENABLE_ACCEL || ENABLE_GYRO || ENABLE_MAG
     setup_imu();
+    interval = (1000 / (long) get_acc_gyro_odr());
+#endif
+#if ENABLE_AUDIO
+    setup_audio();
+    interval = 0;
+#endif
     delay(1000);
     kb_model_init();
     delay(1000);
-    interval = (1000 / (long)get_acc_gyro_odr());
+
     delay(1000);
     memset(sensorRawData, 0, num_sensors * sizeof(int16_t));
 }
 
 void loop()
 {
-
     sensorRawIndex = 0;
-    currentMs = millis();
+    currentMs      = millis();
     if (currentMs - previousMs >= interval)
     {
+#if ENABLE_ACCEL || ENABLE_GYRO || ENABLE_MAG
         update_imu();
         data = sensorRawData;
-        ret = kb_run_model((SENSOR_DATA_T*)data, num_sensors, KB_MODEL_jp1_rank_0_INDEX);
-        if (ret >= 0) {
+        ret  = kb_run_model((SENSOR_DATA_T*) data, num_sensors, KB_MODEL_jp1_rank_0_INDEX);
+        if (ret >= 0)
+        {
             sml_output_results(KB_MODEL_jp1_rank_0_INDEX, ret);
             kb_reset_model(0);
         };
+#endif
 
+#if ENABLE_AUDIO
+
+        if (samplesRead)
+        {
+            for (int i = 0; i < samplesRead; i++)
+            {
+                data = sampleBuffer + i;
+                ret  = kb_run_model_with_cascade_reset(
+                    (SENSOR_DATA_T*) data, num_sensors, KB_MODEL_a1_rank_0_INDEX);
+                if (ret >= 0)
+                {
+                    sml_output_results(KB_MODEL_a1_rank_0_INDEX, ret);
+                    kb_reset_model(0);
+                };
+            }
+            samplesRead = 0;
+        }
+#endif
         previousMs = currentMs;
     }
 }

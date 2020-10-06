@@ -26,7 +26,7 @@ Build/upload the firmware.
 
 ### Adjusting IMU Frequency
 
-If you wish to run the IMU at a different frequency (default for data capture and this example is 119 Hz), modify the `ACCEL_GYRO_DEFAULT_ODR` in `include/recognition_config.h`
+If you wish to run the IMU at a different frequency (default for data capture and this example is 119 Hz), modify the `ACCEL_GYRO_DEFAULT_ODR` in `include/sensor_config.h`
 As the [Data Capture Lab](https://sensiml.com/products/data-capture-lab/) of the SensiML Toolkit does not actively configure the device, a capture configuration isn't generated when creating the model code.
 
 ## Viewing Model Output
