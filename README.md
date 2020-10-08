@@ -20,7 +20,7 @@ Unzip the download to a location of your choosing. In the folder, you will find 
 Copy the files from `libsensiml` to lib/sensiml. It is **ok to overwrite these, but do not commit them in a pull request**. The files provided in this repository are for examples only.
 
 Copy the files from `knowledgepack_project` to src/
-Updates to the setup and non-generated code in `main.cpp` will be pulled into SensiML services for building libraries.
+This should be `sml_recognition_run.cpp`, which will contain the necessary model running code to enable recognition on the device. 
 
 Build/upload the firmware.
 

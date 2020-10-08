@@ -1,21 +1,27 @@
 #ifndef __SENSOR_CONFIG_H__
 #define __SENSOR_CONFIG_H__
-
+#include <ArduinoJson.h>
+#include "kb.h"
 /**
  *
  * BLE Settings
  *
  */
-#define USE_BLE 0
-#if USE_BLE
-const char* nameOfPeripheral = "Nano33 SensiML";
-const char* uuidOfService = "16480000-0525-4ad5-b4fb-6dd83f49546b";
-const char* uuidOfConfigChar = "16480001-0525-4ad5-b4fb-6dd83f49546b";
-const char* uuidOfDataChar = "16480002-0525-4ad5-b4fb-6dd83f49546b";
-#endif //USE_BLE
+#define USE_BLE 1
 
-const int WRITE_BUFFER_SIZE = 256;
-bool WRITE_BUFFER_FIXED_LENGTH = false;
+typedef struct __attribute__((packed))
+{
+    uint16_t model;
+    uint16_t classification;
+} kp_output_t;
+
+typedef struct __attribute__((packed))
+{
+    kp_output_t model_out;
+    uint8_t     fv_len;
+    uint8_t     features[MAX_VECTOR_SIZE];
+
+} kp_output_fv_t;
 
 
 /**
@@ -62,7 +68,7 @@ enum {
 #define ACCEL_GYRO_DEFAULT_ODR ACCEL_GYRO_ODR_119HZ
 #define MAG_DEFAULT_ODR MAG_ODR_20HZ
 
-#define ENABLE_AUDIO 1
+#define ENABLE_AUDIO 0
 #if ENABLE_AUDIO
 #define AUDIO_SAMPLE_RATE 16000
 int setup_audio(JsonDocument& config_message, int column_start);
@@ -79,5 +85,7 @@ uint8_t* getSampleBuffer();
 
 #endif //ENABLE_AUDIO
 
+void sml_output_results(uint16_t model, uint16_t classification);
+int sml_recognition_run(signed short *data);
 
 #endif //__SENSOR_CONFIG_H__
