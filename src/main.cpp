@@ -78,16 +78,9 @@ void setup_ble()
     delay(1000);
     BLE.addService(recognitionService);
     BLE.setAdvertisedService(recognitionService);
-    Serial.println("SDLKJFDSKLJFDLKSFJLKSDJFKLSJDFFDS_THREE");
-
-
     // Bluetooth LE connection handlers.
     BLE.setEventHandler(BLEConnected, onBLEConnected);
     BLE.setEventHandler(BLEDisconnected, onBLEDisconnected);
-    // classOnlyChar.setEventHandler(BLESubscribed, onSubscribed);
-    // classFeaturesChar.setEventHandler(BLESubscribed, onSubscribed);
-
-    Serial.println("SDLKJFDSKLJFDLKSFJLKSDJFKLSJDFFDS_FOUR");
 
     // Serial.println("BLE Init done!");
     PrintInfo();
@@ -334,9 +327,9 @@ void loop()
         {
             for (int i = 0; i < samplesRead; i++)
             {
-                data = sampleBuffer + i;
+                data = &sampleBuffer[i];
 
-                sml_recognition_run(data);
+                sml_recognition_run(data, num_sensors);
             }
             samplesRead = 0;
         }
