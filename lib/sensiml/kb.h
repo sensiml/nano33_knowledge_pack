@@ -1,32 +1,31 @@
-/*
-* Copyright (c) 2017, SensiML Corporation. All rights reserved.
+/* ----------------------------------------------------------------------
+* Copyright (c) 2020 SensiML Coproration
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
 *
 * 1. Redistributions of source code must retain the above copyright notice,
-* this list of conditions and the following disclaimer.
+*    this list of conditions and the following disclaimer.
 *
 * 2. Redistributions in binary form must reproduce the above copyright notice,
-* this list of conditions and the following disclaimer in the documentation
-* and/or other materials provided with the distribution.
+*    this list of conditions and the following disclaimer in the documentation
+*    and/or other materials provided with the distribution.
 *
 * 3. Neither the name of the copyright holder nor the names of its contributors
-* may be used to endorse or promote products derived from this software without
-* specific prior written permission.
+*    may be used to endorse or promote products derived from this software
+*    without specific prior written permission.
 *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-* LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-* POSSIBILITY OF SUCH DAMAGE.
-*/
+* LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+* ---------------------------------------------------------------------- */
 
 #ifndef __KB_H__
 #define __KB_H__
@@ -37,9 +36,9 @@
 #define SENSIML_NUMBER_OF_MODELS 1
 
 //Model Indexes to use for calls
-#define KB_MODEL_jp1_rank_0_INDEX 0
+#define KB_MODEL_j1_rank_0_INDEX 0
 
-#define MAX_VECTOR_SIZE 33
+#define MAX_VECTOR_SIZE 17
 
 //FILL_SENSIML_SENSOR_USAGES
 
@@ -320,12 +319,12 @@ int print_sml_classification_result_info(char *pbuf, int model_index);
 
 
 /**
-* @brief Set the feature vector for a model 
+* @brief Set the feature vector for a model
 *
 * @param[int] model_index Model index to use.
 * @param[uint8_t *] feature_vector to set the model input to
 *
-* @returns[int] the count of features that were set 
+* @returns[int] the count of features that were set
 */
 int sml_set_feature_vector(int model_index, uint8_t * feature_vector);
 
@@ -334,7 +333,7 @@ int sml_set_feature_vector(int model_index, uint8_t * feature_vector);
 *
 * @param[int] model_index Model index to use.
 *
-* @returns[uint16_t] classification result 
+* @returns[uint16_t] classification result
 */
 uint16_t sml_recognize_feature_vector(int model_index);
 

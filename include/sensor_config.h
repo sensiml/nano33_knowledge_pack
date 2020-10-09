@@ -86,6 +86,6 @@ uint8_t* getSampleBuffer();
 #endif //ENABLE_AUDIO
 
 void sml_output_results(uint16_t model, uint16_t classification);
-int sml_recognition_run(signed short *data);
+void sml_recognition_run(signed short *data, int num_sensors);
 
 #endif //__SENSOR_CONFIG_H__

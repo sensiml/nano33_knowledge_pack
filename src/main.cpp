@@ -18,6 +18,7 @@ BLECharacteristic classOnlyChar
     = BLECharacteristic(RecognitionClassOnlyUuid, BLERead | BLENotify, 4, true);
 BLECharacteristic classFeaturesChar = BLECharacteristic(
     RecognitionClassFeatureUuid, BLERead | BLENotify, WRITE_BUFFER_SIZE, WRITE_BUFFER_FIXED_LENGTH);
+BLEDevice central;
 
 static void connectedLight()
 {
@@ -90,7 +91,6 @@ void setup_ble()
 
     // Serial.println("BLE Init done!");
     PrintInfo();
-
 }
 
 void Send_Notification(uint16_t model_no,
@@ -98,6 +98,7 @@ void Send_Notification(uint16_t model_no,
                        uint8_t* features,
                        uint16_t num_features)
 {
+
     Serial.println("Sending Class");
     kp_output_t    base_output;
     kp_output_fv_t output_with_features;
@@ -235,6 +236,7 @@ void sml_output_results(uint16_t model, uint16_t classification)
     Serial.flush();
     classification_result.clear();
 #if USE_BLE
+if(central.connected())
     Send_Notification(model, classification, features, fv_length);
 
 #endif  // USE_BLE
@@ -244,7 +246,7 @@ void sml_output_results(uint16_t model, uint16_t classification)
 #include <PDM.h>
 static void  onPDMdata();
 volatile int samplesRead;
-short        sampleBuffer[1024];
+short        sampleBuffer[2048];
 
 int setup_audio()
 {
@@ -280,6 +282,8 @@ void setup()
     Serial.begin(SERIAL_BAUD_RATE);
     delay(2000);
     Serial.println("Setting up...");
+    kb_model_init();
+    delay(1000);
 
 #if ENABLE_ACCEL || ENABLE_GYRO || ENABLE_MAG
     setup_imu();
@@ -287,32 +291,33 @@ void setup()
 #endif
 #if ENABLE_AUDIO
     setup_audio();
-    interval = 0;
+    interval = 16;
+    delay(1000);
 #endif
-    delay(1000);
-    kb_model_init();
-    delay(1000);
+
 #if USE_BLE
     // ble_reporter = SensiML_KP_BLE();
     Serial.println("Start ble setup");
     setup_ble();
-#endif
     delay(1000);
-    memset(sensorRawData, 0, num_sensors * sizeof(int16_t));
-    Serial.println("Advertising...");
     BLE.advertise();
     disconnectedLight();
+    Serial.println("Advertising...");
+
+#endif
+
+    memset(sensorRawData, 0, num_sensors * sizeof(int16_t));
 }
 
 void loop()
 {
 #if USE_BLE
-    BLEDevice central = BLE.central();
-    if(central.connected())
+    central = BLE.central();
+    if (central.connected())
     {
         connectedLight();
     }
-#endif //USE_BLE
+#endif  // USE_BLE
     sensorRawIndex = 0;
     currentMs      = millis();
     if (currentMs - previousMs >= interval)
@@ -320,16 +325,11 @@ void loop()
 #if ENABLE_ACCEL || ENABLE_GYRO || ENABLE_MAG
         update_imu();
         data = sensorRawData;
-        ret  = kb_run_model((SENSOR_DATA_T*) data, num_sensors, KB_MODEL_jp1_rank_0_INDEX);
-        if (ret >= 0)
-        {
-            sml_output_results(KB_MODEL_jp1_rank_0_INDEX, ret);
-            kb_reset_model(0);
-        };
+        sml_recognition_run(data, num_sensors);
 #endif
 
 #if ENABLE_AUDIO
-
+    num_sensors = 1;
         if (samplesRead)
         {
             for (int i = 0; i < samplesRead; i++)
@@ -337,7 +337,6 @@ void loop()
                 data = sampleBuffer + i;
 
                 sml_recognition_run(data);
-
             }
             samplesRead = 0;
         }
