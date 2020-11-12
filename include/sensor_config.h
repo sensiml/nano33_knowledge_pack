@@ -27,7 +27,13 @@ typedef struct __attribute__((packed))
 /**
  * Serial Port Settings
  */
-#define SERIAL_BAUD_RATE 115200
+#define USE_SECOND_SERIAL_PORT_FOR_OUTPUT 1
+
+#if USE_SECOND_SERIAL_PORT_FOR_OUTPUT
+#define SERIAL_BAUD_RATE 115200 *4
+#else
+#define SERIAL_BAUD_RATE 115200 * 8
+#endif //USE_SECOND_SERIAL_PORT_FOR_OUTPUT
 
 /**
  * IMU Settings

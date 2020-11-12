@@ -20,6 +20,12 @@ BLECharacteristic classFeaturesChar = BLECharacteristic(
     RecognitionClassFeatureUuid, BLERead | BLENotify, WRITE_BUFFER_SIZE, WRITE_BUFFER_FIXED_LENGTH);
 BLEDevice central;
 
+#if USE_SECOND_SERIAL_PORT_FOR_OUTPUT
+auto& dataOutSerial = Serial1;
+#else
+auto& dataOutSerial = Serial;
+#endif //USE_SECOND_SERIAL_PORT_FOR_OUTPUT
+
 static void connectedLight()
 {
     digitalWrite(LEDR, LOW);
@@ -224,9 +230,9 @@ void sml_output_results(uint16_t model, uint16_t classification)
         fv.add(String(features[i]));
     }
 
-    serializeJson(classification_result, Serial);
-    Serial.println("");
-    Serial.flush();
+    serializeJson(classification_result, dataOutSerial);
+    dataOutSerial.println("");
+    dataOutSerial.flush();
     classification_result.clear();
 #if USE_BLE
 if(central.connected())
@@ -275,8 +281,13 @@ void setup()
     Serial.begin(SERIAL_BAUD_RATE);
     delay(2000);
     Serial.println("Setting up...");
+#if USE_SECOND_SERIAL_PORT_FOR_OUTPUT
+    Serial1.begin(SERIAL_BAUD_RATE);
+#endif //USE_SECOND_SERIAL_PORT_FOR_OUTPUT
+
     kb_model_init();
     delay(1000);
+
 
 #if ENABLE_ACCEL || ENABLE_GYRO || ENABLE_MAG
     setup_imu();
