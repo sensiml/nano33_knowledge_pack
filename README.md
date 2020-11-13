@@ -20,7 +20,7 @@ Unzip the download to a location of your choosing. In the folder, you will find 
 Copy the files from `libsensiml` to lib/sensiml. It is **ok to overwrite these, but do not commit them in a pull request**. The files provided in this repository are for examples only.
 
 Copy the files from `knowledgepack_project` to src/
-This should be `sml_recognition_run.cpp`, which will contain the necessary model running code to enable recognition on the device. 
+This should be `sml_recognition_run.cpp`, which will contain the necessary model running code to enable recognition on the device.
 
 Build/upload the firmware.
 
@@ -34,8 +34,25 @@ As the [Data Capture Lab](https://sensiml.com/products/data-capture-lab/) of the
 For Serial output, simply connect to your Nano33 via any serial monitoring application. You should see an output similar to this:
 
 ``` json
-{"ModelNumber":0,"Classification":2,"FeatureLength":33,"FeatureVector":["2","0","253","252","93","217","0","0","0","0","0","0","205","221","255","183","0","0","0","1","1","0","0","1","0","1","0","0","2","0","4","145","19"]}
+{
+    "ModelNumber": 0,
+    "Classification": 2,
+    "FeatureLength": 33,
+    "FeatureVector": [
+        "2", "0", "253", "252", "93",
+        "217", "0", "0", "0", "0",
+        "0", "0", "205", "221", "255",
+        "183", "0", "0", "0", "1",
+        "1", "0", "0", "1", "0",
+        "1", "0", "0", "2", "0",
+        "4", "145", "19"
+    ]
+}
 ```
+
+### Viewing model output with ESP32 or other board via second UART
+
+In `sensor_config.h`, set `#define USE_SECOND_SERIAL_PORT_FOR_OUTPUT` to `1` to enable the second Serial port output. This will still work with BLE, and can be modified to still print out the results on the USB serial by changing `sml_output_results()`.
 
 ## Using TensorFlow Lite for Microcontrollers in a Knowledge Pack
 When running a model built using [TensorFlow Lite](https://www.tensorflow.org/lite) in a [SensiML Knowledge Pack](https://sensiml.com/tensorflow-lite/), another environment is provided in the code base.
