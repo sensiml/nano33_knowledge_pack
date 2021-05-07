@@ -3,6 +3,8 @@
 #include <Arduino_LSM9DS1.h>  //Include the library for 9-axis IMU
 
 #include <kb.h>
+#include "kb_debug.h"
+
 #include <sensor_config.h>
 #if USE_BLE
 #include <ArduinoBLE.h>
@@ -210,30 +212,43 @@ static void update_imu()
     }
 }
 
+#if SML_PROFILER
+#define Serial1_OUT_CHARS_MAX 2048
+float recent_fv_times[MAX_VECTOR_SIZE];
+unsigned int recent_fv_cycles[MAX_VECTOR_SIZE];
+#else
+#define Serial1_OUT_CHARS_MAX 512
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
+
+static char Serial1_out_buf[Serial1_OUT_CHARS_MAX];
+static uint8_t recent_fv[MAX_VECTOR_SIZE];
+static uint16_t recent_fv_len;
+
+static char *p_Serial1_out = Serial1_out_buf;
+
 void sml_output_results(uint16_t model, uint16_t classification)
 {
-    classification_result["ModelNumber"]    = model;
-    classification_result["Classification"] = classification;
+    #if SML_PROFILER
+    kb_print_model_result_with_profile(model, classification, Serial1_out_buf, recent_fv, recent_fv_cycles, recent_fv_times);
+    #else
+    kb_print_model_result(model, classification, Serial1_out_buf, 1, recent_fv);
+    #endif
 
-    kb_get_feature_vector(model, features, &fv_length);
-    classification_result["FeatureLength"] = fv_length;
-
-    JsonArray fv = classification_result.createNestedArray("FeatureVector");
-    for (int i = 0; i < fv_length; i++)
-    {
-        fv.add(String(features[i]));
-    }
-
-    serializeJson(classification_result, Serial);
+    Serial.print(Serial1_out_buf);
     Serial.println("");
     Serial.flush();
-    classification_result.clear();
 #if USE_BLE
 if(central.connected())
     Send_Notification(model, classification, features, fv_length);
 
 #endif  // USE_BLE
 }
+
 
 #if ENABLE_AUDIO
 #include <PDM.h>
@@ -250,20 +265,7 @@ int setup_audio()
         while (1)
             ;
     }
-
-    return 0;
-}
-
-uint8_t* getSampleBuffer() { return (uint8_t*) sampleBuffer; }
-
-static void onPDMdata()
-{
-    // query the number of bytes available
-    int bytesAvailable = PDM.available();
-
-    // read into the sample buffer
-    PDM.read(sampleBuffer, bytesAvailable);
-
+Serial
     // 16-bit, 2 bytes per sample
     samplesRead = bytesAvailable / 2;
 }
@@ -289,7 +291,6 @@ void setup()
 #endif
 
 #if USE_BLE
-    // ble_reporter = SensiML_KP_BLE();
     Serial.println("Start ble setup");
     setup_ble();
     delay(1000);
