@@ -20,17 +20,19 @@ BLECharacteristic classFeaturesChar = BLECharacteristic(
     RecognitionClassFeatureUuid, BLERead | BLENotify, WRITE_BUFFER_SIZE, WRITE_BUFFER_FIXED_LENGTH);
 BLEDevice central;
 
+
 static void connectedLight()
+{
+    digitalWrite(LEDR, HIGH);
+    digitalWrite(LEDG, LOW);
+}
+
+static void disconnectedLight()
 {
     digitalWrite(LEDR, LOW);
     digitalWrite(LEDG, HIGH);
 }
 
-static void disconnectedLight()
-{
-    digitalWrite(LEDR, HIGH);
-    digitalWrite(LEDG, LOW);
-}
 static void onBLEConnected(BLEDevice central)
 {
     Serial.print("Connected event, central: ");
@@ -82,7 +84,7 @@ void setup_ble()
     BLE.setEventHandler(BLEConnected, onBLEConnected);
     BLE.setEventHandler(BLEDisconnected, onBLEDisconnected);
 
-    // Serial.println("BLE Init done!");
+    Serial.println("BLE Init done!");
     PrintInfo();
 }
 
@@ -92,7 +94,6 @@ void Send_Notification(uint16_t model_no,
                        uint16_t num_features)
 {
 
-    Serial.println("Sending Class");
     kp_output_t    base_output;
     kp_output_fv_t output_with_features;
     base_output.model          = model_no;
@@ -104,9 +105,11 @@ void Send_Notification(uint16_t model_no,
         output_with_features.fv_len = num_features;
         memcpy(output_with_features.features, features, num_features);
         classFeaturesChar.writeValue((void*) &output_with_features, sizeof(kp_output_fv_t));
+        Serial.println("Sending With Classification with Features");
     }
     if (classOnlyChar.subscribed())
     {
+        Serial.println("Sending Classification");
         classOnlyChar.writeValue((void*) &base_output, sizeof(kp_output_t));
     }
 }
