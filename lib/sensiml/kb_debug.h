@@ -52,19 +52,20 @@ extern "C"
 */
     int kb_print_model_result(int model_index, int result, char *pbuf, bool feature_vectors, uint8_t *fv_arr);
 
-    /**
+/**
 * @brief Prints the model class map to a char string
 *
 * @param[in] model_index Model index to use.
 */
-    void kb_print_model_class_map(int model_index, char *output);
-#define kb_print_model_class_map sml_print_model_class_map
+void kb_print_model_class_map(int model_index, char *output);
+#define sml_print_model_class_map kb_print_model_class_map
 
 void kb_print_model_map();
 
-#if SML_PROFILER
-int kb_print_model_result_with_profile(int model_index, int result, char *pbuf, uint8_t *fv_arr, unsigned int *cycles, float * times);
-#endif //SML_PROFILER
+int kb_print_model_cycles(
+    int model_index, char* pbuf, unsigned int* cycles);
+int kb_print_model_times(
+    int model_index, char* pbuf, float* times);
 
 #ifdef __cplusplus
 }

@@ -234,7 +234,7 @@ static char *p_Serial1_out = Serial1_out_buf;
 void sml_output_results(uint16_t model, uint16_t classification)
 {
     #if SML_PROFILER
-    kb_print_model_result_with_profile(model, classification, Serial1_out_buf, recent_fv, recent_fv_cycles, recent_fv_times);
+    kb_print_model_cycles(model, Serial1_out_buf, recent_fv_cycles);
     #else
     kb_print_model_result(model, classification, Serial1_out_buf, 1, recent_fv);
     #endif

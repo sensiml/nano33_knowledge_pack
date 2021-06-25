@@ -6,12 +6,15 @@
 #endif
 #include "stdio.h"
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-
-#ifndef SML_KP_DEBUG
-#define SML_KP_DEBUG 0
+#define SML_DEBUG 1
+#define KB_LOG_LEVEL 1
+#define SML_PROFILER 1
+#ifndef SML_DEBUG
+#define SML_DEBUG 0
 #endif
 #ifndef KB_LOG_LEVEL
 #define KB_LOG_LEVEL 1
@@ -20,45 +23,81 @@ extern "C" {
 #define SML_PROFILER 0
 #endif
 
-
-
-
-#if SML_KP_DEBUG
-	#if defined(WIN32) || defined(KBSIM)
-		#if SML_PROFILER
-			#define dbgprintlev(level, ...) if(level <= KB_LOG_LEVEL) {printf(__VA_ARGS__);printf("\n");}
-			#define dbgprintlev_no_nl(level, ...) if(level <= KB_LOG_LEVEL) {printf(__VA_ARGS__);}
-			#define pr_info(logger, ...) {printf(__VA_ARGS__); printf("\n");}
-		#else
-			#define dbgprintlev(level, ...) if(level <= KB_LOG_LEVEL) {printf(__VA_ARGS__);printf("\n");}
-			#define dbgprintlev_no_nl(level, ...) if(level <= KB_LOG_LEVEL) {printf(__VA_ARGS__);}
-			#define pr_info(logger, ...) {printf(__VA_ARGS__); printf("\n");}
-		#endif
-	#elif defined(STM32L476xx)
-		#include "main.h"
-		#define dbgprintlev(level, ...) if(level <= KB_LOG_LEVEL) {STLBLE_PRINTF(__VA_ARGS__);STLBLE_PRINTF("\n");}
-		#define dbgprintlev_no_nl(level, ...) if(level <= KB_LOG_LEVEL) {STLBLE_PRINTF(__VA_ARGS__);}
-	#elif NRF_LOG_ENABLED
-		#include "nrf_log.h"
-		#define dbgprintlev(level, ...) if(level <= KB_LOG_LEVEL) {NRF_LOG_INFO(__VA_ARGS__);}
-		#define dbgprintlev_no_nl(level, ...) dbgprintlev(level, __VA_ARGS__);
-	#else
-    	#ifndef dbgprintlev
-    		#define dbgprintlev(level,...)
-		#endif //dbgprintlev
-		#ifndef dbgprintlev_no_nl
-			#define dbgprintlev_no_nl(level, ...)
-		#endif //dbgprintlev_no_nl
-	#endif
+#if SML_DEBUG
+#if defined(WIN32) || defined(KBSIM)
+#if SML_PROFILER
+#define dbgprintlev(level, ...) \
+	if (level <= KB_LOG_LEVEL)  \
+	{                           \
+		printf(__VA_ARGS__);    \
+		printf("\n");           \
+	}
+#define dbgprintlev_no_nl(level, ...) \
+	if (level <= KB_LOG_LEVEL)        \
+	{                                 \
+		printf(__VA_ARGS__);          \
+	}
+#define pr_info(logger, ...) \
+	{                        \
+		printf(__VA_ARGS__); \
+		printf("\n");        \
+	}
+#else
+#define dbgprintlev(level, ...) \
+	if (level <= KB_LOG_LEVEL)  \
+	{                           \
+		printf(__VA_ARGS__);    \
+		printf("\n");           \
+	}
+#define dbgprintlev_no_nl(level, ...) \
+	if (level <= KB_LOG_LEVEL)        \
+	{                                 \
+		printf(__VA_ARGS__);          \
+	}
+#define pr_info(logger, ...) \
+	{                        \
+		printf(__VA_ARGS__); \
+		printf("\n");        \
+	}
+#endif
+#elif defined(STM32L476xx)
+#include "main.h"
+#define dbgprintlev(level, ...)     \
+	if (level <= KB_LOG_LEVEL)      \
+	{                               \
+		STLBLE_PRINTF(__VA_ARGS__); \
+		STLBLE_PRINTF("\n");        \
+	}
+#define dbgprintlev_no_nl(level, ...) \
+	if (level <= KB_LOG_LEVEL)        \
+	{                                 \
+		STLBLE_PRINTF(__VA_ARGS__);   \
+	}
+#elif NRF_LOG_ENABLED
+#include "nrf_log.h"
+#define dbgprintlev(level, ...)    \
+	if (level <= KB_LOG_LEVEL)     \
+	{                              \
+		NRF_LOG_INFO(__VA_ARGS__); \
+	}
+#define dbgprintlev_no_nl(level, ...) dbgprintlev(level, __VA_ARGS__);
+#else
+#ifndef dbgprintlev
+#define dbgprintlev(level, ...)
+#endif //dbgprintlev
+#ifndef dbgprintlev_no_nl
+#define dbgprintlev_no_nl(level, ...)
+#endif //dbgprintlev_no_nl
+#endif
 
 #else
 #ifndef dbgprintlev
-    #define dbgprintlev(level,...)
+#define dbgprintlev(level, ...)
 #endif //dbgprintlev
 #ifndef dbgprintlev_no_nl
-	#define dbgprintlev_no_nl(level, ...)
+#define dbgprintlev_no_nl(level, ...)
 #endif //dbgprintlev_no_nl
-#endif //SML_KP_DEBUG
+#endif //SML_DEBUG
 
 #ifdef __cplusplus
 }
