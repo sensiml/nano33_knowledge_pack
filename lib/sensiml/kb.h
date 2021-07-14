@@ -44,7 +44,7 @@
 //Model Indexes to use for calls
 #define KB_MODEL_TESTMODEL_INDEX 0
 
-#define MAX_VECTOR_SIZE 66
+#define MAX_VECTOR_SIZE 3
 
 //FILL_SENSIML_SENSOR_USAGES
 
