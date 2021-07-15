@@ -35,7 +35,7 @@ typedef struct __attribute__((packed))
 
 // IMU Sensors Enable/Disable
 #define ENABLE_ACCEL 1
-#define ENABLE_GYRO 0
+#define ENABLE_GYRO 1
 #define ENABLE_MAG 0
 
 //IMU ODR settings. Note: Gyroscope and Accel are linked.
