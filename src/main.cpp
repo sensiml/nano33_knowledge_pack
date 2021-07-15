@@ -268,7 +268,20 @@ int setup_audio()
         while (1)
             ;
     }
-Serial
+    return 0;
+
+}
+
+uint8_t* getSampleBuffer() { return (uint8_t*) sampleBuffer; }
+
+static void onPDMdata()
+{
+    // query the number of bytes available
+    int bytesAvailable = PDM.available();
+
+    // read into the sample buffer
+    PDM.read(sampleBuffer, bytesAvailable);
+
     // 16-bit, 2 bytes per sample
     samplesRead = bytesAvailable / 2;
 }
