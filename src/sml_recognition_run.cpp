@@ -8,9 +8,9 @@ void sml_recognition_run(signed short *data, int num_sensors)
 
     int ret;
 #if ENABLE_ACCEL || ENABLE_GYRO || ENABLE_MAG
-    		ret = kb_run_model((SENSOR_DATA_T*)data, num_sensors, KB_MODEL_j1_rank_0_INDEX);
+    		ret = kb_run_model((SENSOR_DATA_T *)data, num_sensors, KB_MODEL_TESTMODEL_INDEX);
 		if (ret >= 0){
-			sml_output_results(KB_MODEL_j1_rank_0_INDEX, ret);
+			sml_output_results(KB_MODEL_TESTMODEL_INDEX, ret);
 			kb_reset_model(0);
 		};
 #endif //ENABLE_ACCEL || ENABLE_GYRO || ENABLE_MAG

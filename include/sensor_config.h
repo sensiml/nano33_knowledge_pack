@@ -7,7 +7,7 @@
  * BLE Settings
  *
  */
-#define USE_BLE 1
+#define USE_BLE 0
 
 typedef struct __attribute__((packed))
 {

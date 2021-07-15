@@ -33,6 +33,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef float FLOAT;
 typedef signed short SENSOR_DATA_T;
